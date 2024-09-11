@@ -10,5 +10,6 @@ public interface NurseRepository extends JpaRepository<NurseEntity, String> {
     
     boolean existsByUserId(String userId);
     boolean exisexistsByTelNumber(String telNumber);
+    boolean existsByTelNumber(String telNumber);
 
 }

@@ -3,10 +3,14 @@ package com.korit.senicare.service.implement;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
+import com.korit.senicare.common.utill.AuthNumberCreator;
 import com.korit.senicare.dto.request.auth.IdCheckRequestDto;
 import com.korit.senicare.dto.request.auth.TelAuthRequestDto;
 import com.korit.senicare.dto.response.ResponseDto;
+import com.korit.senicare.entity.TelAuthNumberEntity;
+import com.korit.senicare.provider.SmsProvider;
 import com.korit.senicare.repository.NurseRepository;
+import com.korit.senicare.repository.TelAuthNumberRepository;
 import com.korit.senicare.service.AuthService;
 
 import lombok.RequiredArgsConstructor;
@@ -15,8 +19,10 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthServiceImplement implements AuthService {
 
+    private final SmsProvider smsProvider;
+
     private final NurseRepository nurseRepository;
-    private 
+    private final TelAuthNumberRepository telAuthNumberRepository;
 
     @Override
     public ResponseEntity<ResponseDto> idCheck(IdCheckRequestDto dto) {
@@ -39,32 +45,41 @@ public class AuthServiceImplement implements AuthService {
 
     @Override
     public ResponseEntity<ResponseDto> telAuth(TelAuthRequestDto dto) {
-
+        
         String telNumber = dto.getTelNumber();
-
 
         try {
 
-            boolean isExistedTelNumber = nurseRepository.exisexistsByTelNumber(telNumber)
-            if (isExistedTelNumber) return ResponseDto.duplicatedTelNumber()
+            boolean isExistedTelNumber = nurseRepository.existsByTelNumber(telNumber);
+            if (isExistedTelNumber) return ResponseDto.duplicatedTelNumber();
 
-
-        } catch(Exception cException) {
+        } catch(Exception exception) {
             exception.printStackTrace();
             return ResponseDto.databaseError();
         }
 
         String authNumber = AuthNumberCreator.number4();
-        
-        return ResponseDto.success();
 
+        boolean isSendSuccess = smsProvider.sendMessage(telNumber, authNumber);
+        if (!isSendSuccess) return ResponseDto.messageSendFail();
         try {
 
-            telAuthNumberEntity telAuthNumberEntity(telNumber, authNumber);
-            telAuthNumberRepository
-        } catch(Exception)
+            TelAuthNumberEntity telAuthNumberEntity = new TelAuthNumberEntity(telNumber, authNumber);
+            telAuthNumberRepository.save(telAuthNumberEntity);
+
+        } catch(Exception exception) {
+            exception.printStackTrace();
+            return ResponseDto.databaseError();
+        }
+
+        return ResponseDto.success();
+
+    }
+
+    @Override
+    public ResponseEntity<ResponseDto> telAuthCheck(TelAuthRequestDto dto) {
+
+        return ResponseDto.success();
     }
 
 }
-
-String 
