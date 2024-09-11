@@ -12,12 +12,12 @@ import net.nurigo.sdk.message.service.DefaultMessageService;
 // Cool SMS 메세지 전송 제공자
 
 @Component
-public class SmsProvider {
+public class Smsprovider {
     
     private final DefaultMessageService messageService;
     private final String from;
 
-    public SmsProvider(
+    public Smsprovider(
         @Value("${cool-sms.api-key}") String apiKey,
         @Value("${cool-sms.secret-key}") String apiSecretKey,
         @Value("${cool-sms.domain}") String domain,
@@ -27,7 +27,7 @@ public class SmsProvider {
         this.from = from;
     }
 
-    public void sendMessage(String to, String authNumber) {
+    public boolean sendMessage(String to, String authNumber) {
 
         Message message = new Message();
         message.setFrom(from);
@@ -38,6 +38,7 @@ public class SmsProvider {
         SingleMessageSentResponse response = messageService.sendOne(request);
 
         System.out.println(response);
+        return false;
 
     }
 
